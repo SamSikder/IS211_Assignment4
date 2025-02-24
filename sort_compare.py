@@ -1,93 +1,48 @@
-import argparse
-# other imports go here
-
-import random
 import time
-
-def get_me_random_list(n):
-    """Generate list of n elements in random order
-    
-    :params: n: Number of elements in the list
-    :returns: A list with n elements in random order
-    """
-    a_list = list(range(n))
-    random.shuffle(a_list)
-    return a_list
-    
+import random
 
 def insertion_sort(a_list):
-    for index in range(1, len(a_list)):
-        current_value = a_list[index]
-        position = index
+    start_time = time.time()
+    for i in range(1, len(a_list)):
+        key = a_list[i]
+        j = i - 1
+        while j >= 0 and key < a_list[j]:
+            a_list[j + 1] = a_list[j]
+            j -= 1
+        a_list[j + 1] = key
+    return time.time() - start_time
 
-        while position > 0 and a_list[position - 1] > current_value:
-            a_list[position] = a_list[position - 1]
-            position = position - 1
-
-        a_list[position] = current_value
-
-
-def shellSort(alist):
-    sublistcount = len(alist)//2
-    while sublistcount > 0:
-        for startposition in range(sublistcount):
-            gapInsertionSort(alist,startposition,sublistcount)
-
-        print("After increments of size", sublistcount, "The list is",alist)
-
-        sublistcount = sublistcount // 2
-
-
-def gapInsertionSort(alist, start, gap):
-
-    for i in range(start+gap, len(alist), gap):
-        currentvalue = alist[i]
-        position = i
-
-        while position >= gap and alist[position-gap] > currentvalue:
-            alist[position] = alist[position-gap]
-            position = position - gap
-
-        alist[position] = currentvalue
-
+def shell_sort(a_list):
+    start_time = time.time()
+    gap = len(a_list) // 2
+    while gap > 0:
+        for i in range(gap, len(a_list)):
+            temp = a_list[i]
+            j = i
+            while j >= gap and a_list[j - gap] > temp:
+                a_list[j] = a_list[j - gap]
+                j -= gap
+            a_list[j] = temp
+        gap //= 2
+    return time.time() - start_time
 
 def python_sort(a_list):
-    """
-    Use Python built-in sorted function
+    start_time = time.time()
+    a_list.sort()
+    return time.time() - start_time
 
-    :param a_list:
-    :return: the sorted list
-    """
-    return sorted(a_list)
-
+def main():
+    sizes = [500, 1000, 5000]
+    sort_algorithms = [insertion_sort, shell_sort, python_sort]
+    for size in sizes:
+        print(f"\nList size: {size}")
+        total_times = {func.__name__: 0 for func in sort_algorithms}
+        for _ in range(100):
+            test_list = [random.randint(1, 10000) for _ in range(size)]
+            for func in sort_algorithms:
+                total_times[func.__name__] += func(test_list[:])  # Pass a copy to avoid in-place sorting
+        for func_name, total_time in total_times.items():
+            print(f"{func_name.replace('_', ' ').title()} took {total_time / 100:10.7f} seconds to run, on average.")
 
 if __name__ == "__main__":
-    """Main entry point"""
-    list_sizes = [500, 1000, 5000]
-
-    # the_size = list_sizes[0]
-
-    for the_size in list_sizes:
-        total_time = 0
-        for i in range(100):
-            mylist500 = get_me_random_list(the_size)
-            start = time.time()
-            sorted_list = python_sort(mylist500)
-            time_spent = time.time() - start
-            total_time += time_spent
-
-        avg_time = total_time / 100
-        print(f"Python sort took {avg_time:10.7f} seconds to run, on average for a list of {the_size} elements")
-
-        total_time = 0
-        for i in range(100):
-            mylist500 = get_me_random_list(the_size)
-            start = time.time()
-            insertion_sort(mylist500)
-            time_spent = time.time() - start
-            total_time += time_spent
-
-        # Repeat the same loop and use shellSort(...)
-
-        avg_time = total_time / 100
-        print(f"Insertion sort took {avg_time:10.7f} seconds to run, on average for a list of {the_size} elements")
+    main()
